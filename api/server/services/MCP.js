@@ -56,6 +56,7 @@ async function createMCPTool({ req, toolKey, provider: _provider }) {
         serverName,
         toolName,
         provider,
+        cookie: req.cookies,
         toolArguments,
         options: {
           userId: config?.configurable?.user_id,

@@ -68,6 +68,7 @@ export const WebSocketOptionsSchema = BaseOptionsSchema.extend({
 export const SSEOptionsSchema = BaseOptionsSchema.extend({
   type: z.literal('sse').optional(),
   headers: z.record(z.string(), z.string()).optional(),
+  passUserCookie: z.boolean().optional(),
   url: z
     .string()
     .url()

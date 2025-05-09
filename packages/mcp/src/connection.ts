@@ -89,6 +89,7 @@ export class MCPConnection extends EventEmitter {
     options: t.MCPOptions,
     logger?: Logger,
     userId?: string,
+    cookie?: Record<string, string>,
   ): MCPConnection {
     if (!MCPConnection.instance) {
       MCPConnection.instance = new MCPConnection(serverName, options, logger, userId);

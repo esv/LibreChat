@@ -181,7 +181,11 @@ export class MCPManager {
   }
 
   /** Gets or creates a connection for a specific user */
-  public async getUserConnection(userId: string, serverName: string): Promise<MCPConnection> {
+  public async getUserConnection(
+    userId: string,
+    serverName: string,
+    cookie: Record<string, string>,
+  ): Promise<MCPConnection> {
     const userServerMap = this.userConnections.get(userId);
     let connection = userServerMap?.get(serverName);
     const now = Date.now();
@@ -230,6 +234,19 @@ export class MCPManager {
 
     if (this.processMCPEnv) {
       config = { ...(this.processMCPEnv(config, userId) ?? {}) };
+    }
+
+    if (
+      (config.type === undefined || config.type === 'sse') &&
+      'passUserCookie' in config &&
+      config.passUserCookie
+    ) {
+      config.headers = {
+        ...(config.headers ?? {}),
+        Cookie: Object.entries(cookie)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('; '),
+      };
     }
 
     connection = new MCPConnection(serverName, config, this.logger, userId);
@@ -414,12 +431,14 @@ export class MCPManager {
     serverName,
     toolName,
     provider,
+    cookie,
     toolArguments,
     options,
   }: {
     serverName: string;
     toolName: string;
     provider: t.Provider;
+    cookie: Record<string, string>;
     toolArguments?: Record<string, unknown>;
     options?: CallToolOptions;
   }): Promise<t.FormattedToolResponse> {
@@ -431,7 +450,7 @@ export class MCPManager {
       if (userId) {
         this.updateUserLastActivity(userId);
         // Get or create user-specific connection
-        connection = await this.getUserConnection(userId, serverName);
+        connection = await this.getUserConnection(userId, serverName, cookie);
       } else {
         // Use app-level connection
         connection = this.connections.get(serverName);
